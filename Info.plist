@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Binary and bundle identity -->
+    <key>CFBundleExecutable</key>
+    <string>Spitter</string>
+    <key>CFBundleName</key>
+    <string>Spitter</string>
+    <key>CFBundleDisplayName</key>
+    <string>Spitter</string>
+    <key>CFBundleIdentifier</key>
+    <string>com.mlg87.spitter</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>NSPrincipalClass</key>
+    <string>NSApplication</string>
+
+    <!-- Hide from Dock and application switcher; show only in menu bar -->
+    <key>LSUIElement</key>
+    <true/>
+
+    <!-- Minimum macOS: 13.0 (SMAppService for Launch at Login) -->
+    <key>LSMinimumSystemVersion</key>
+    <string>13.0</string>
+
+    <!-- Icon file base name (without .icns extension) -->
+    <key>CFBundleIconFile</key>
+    <string>Spitter</string>
+
+    <!-- TCC usage strings: shown in the system permission prompts on first dictation -->
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Spitter records audio while your dictation hotkey is active so it can transcribe your speech on-device.</string>
+    <key>NSSpeechRecognitionUsageDescription</key>
+    <string>Spitter uses on-device speech recognition to turn dictation into text. Audio never leaves your Mac.</string>
+
+    <!-- Version placeholders — build.sh overwrites both from the VERSION file via PlistBuddy -->
+    <key>CFBundleShortVersionString</key>
+    <string>0.0.0</string>
+    <key>CFBundleVersion</key>
+    <string>0.0.0</string>
+</dict>
+</plist>
