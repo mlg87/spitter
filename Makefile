@@ -6,6 +6,7 @@ test:
 
 lint:
 	swift format lint --strict --recursive Sources Package.swift
+	shellcheck ./*.sh
 
 check: build test lint
 
