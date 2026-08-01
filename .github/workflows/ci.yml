@@ -1,0 +1,41 @@
+# Pull-request gate: the same `make check` the release workflow runs, plus commit-message
+# validation (release-please derives versions from conventional commits, so malformed messages
+# silently break releasing).
+name: ci
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    # macos-15: default Xcode 16.x = Swift 6 toolchain, which Package.swift requires.
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Toolchain
+        run: |
+          sw_vers
+          swift --version
+          # Ships in Ubuntu images but is not guaranteed on macOS runners.
+          command -v shellcheck >/dev/null || brew install shellcheck
+
+      - name: Check (build + tests + lint)
+        run: make check
+
+  commitlint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: wagoid/commitlint-github-action@v6

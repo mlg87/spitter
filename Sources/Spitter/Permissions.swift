@@ -59,11 +59,15 @@ final class PermissionCoordinator {
     /// Prompts for everything at launch. Accessibility cannot be granted from a prompt, so the
     /// system dialog only points the user at System Settings; `GlobalKeyMonitor` polls for the grant.
     func requestAll() {
-        SFSpeechRecognizer.requestAuthorization { [weak self] _ in
-            DispatchQueue.main.async { self?.onChange?() }
+        // These completions are marked `@Sendable` on purpose: without it they would inherit this
+        // type's `@MainActor` isolation, and Speech/AVFoundation invoke them on a background queue,
+        // which trips the Swift 6 executor assertion and kills the app at launch.
+        let coordinator = UncheckedBox(self)
+        SFSpeechRecognizer.requestAuthorization { @Sendable _ in
+            DispatchQueue.main.async { MainActor.assumeIsolated { coordinator.value.onChange?() } }
         }
-        AVCaptureDevice.requestAccess(for: .audio) { [weak self] _ in
-            DispatchQueue.main.async { self?.onChange?() }
+        AVCaptureDevice.requestAccess(for: .audio) { @Sendable _ in
+            DispatchQueue.main.async { MainActor.assumeIsolated { coordinator.value.onChange?() } }
         }
         // Literal rather than `kAXTrustedCheckOptionPrompt`, which is an unsafe global under Swift 6.
         let options = ["AXTrustedCheckOptionPrompt": true] as CFDictionary
