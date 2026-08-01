@@ -29,7 +29,7 @@ launch; the rest you have to switch on yourself.
 | **Dictation** | System Settings → Keyboard → Dictation → **On** | installs the on-device speech model Spitter uses |
 
 Without Dictation enabled, recognition fails with *"Siri and Dictation are disabled"* and Spitter
-flashes a warning icon. Without Accessibility, the hotkey does nothing and transcripts are placed
+turns orange. Without Accessibility, the hotkey does nothing and transcripts are placed
 on the clipboard instead of pasted.
 
 Anything still missing shows up as a warning item in the menu; clicking it opens the right
@@ -52,10 +52,26 @@ Where the text goes:
 
 - A text field, text area, search field, combo box, or web content area has focus → Spitter pastes
   into it and restores your previous clipboard contents half a second later.
-- Nothing text-editable has focus → the transcript is left on the clipboard and the menu bar icon
-  flashes a clipboard glyph. Paste it wherever you like.
+- Nothing text-editable has focus → the transcript is left on the clipboard and the menu bar mark
+  flashes blue. Paste it wherever you like.
 
 Recording stops automatically after five minutes so a stuck key cannot record forever.
+
+### Reading the menu bar
+
+The mark in the menu bar is always the same speech bubble; only its colour changes, so you can read
+the state out of the corner of your eye without the shape jumping around.
+
+| Colour | Meaning |
+| --- | --- |
+| Black / white (matches your menu bar) | Idle, ready |
+| Pink | Recording |
+| Violet | Transcribing |
+| Green (flash) | Pasted into the focused field |
+| Blue (flash) | Left on the clipboard |
+| Orange (flash) | Dictation failed — see the menu |
+| Grey (flash) | Nothing was said |
+| Dim red (steady) | A permission is missing |
 
 ### Changing the hotkey
 

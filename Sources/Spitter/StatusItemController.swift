@@ -50,10 +50,10 @@ final class StatusItemController: NSObject, NSMenuDelegate {
 
     func show(_ event: DictationController.Event) {
         switch event {
-        case .delivered(.pasted): flash("checkmark")
-        case .delivered(.copiedToClipboard): flash("doc.on.clipboard")
-        case .emptyTranscript: flash("questionmark")
-        case .failed: flash("exclamationmark.triangle")
+        case .delivered(.pasted): flash(GlyphColor.pasted)
+        case .delivered(.copiedToClipboard): flash(GlyphColor.clipboard)
+        case .emptyTranscript: flash(GlyphColor.empty)
+        case .failed: flash(GlyphColor.failed)
         }
     }
 
@@ -61,26 +61,28 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         applyStateIcon()
     }
 
-    private var stateSymbol: String {
+    /// `nil` means "render the adaptive template glyph", which is what idle uses so the menubar
+    /// looks native at rest.
+    private var stateColor: NSColor? {
         switch state {
-        case .idle: return permissions.missing.isEmpty ? "mic" : "exclamationmark.triangle"
-        case .recording: return "mic.fill"
-        case .transcribing: return "waveform"
+        case .idle: return permissions.missing.isEmpty ? nil : GlyphColor.warning
+        case .recording: return GlyphColor.recording
+        case .transcribing: return GlyphColor.transcribing
         }
     }
 
     private func applyStateIcon() {
-        setSymbol(stateSymbol)
+        setGlyph(stateColor)
     }
 
-    private func setSymbol(_ name: String) {
-        let image = NSImage(systemSymbolName: name, accessibilityDescription: "Spitter")
-        image?.isTemplate = true
+    private func setGlyph(_ color: NSColor?) {
+        let image = MenubarGlyph.image(color: color)
+        image.accessibilityDescription = "Spitter"
         statusItem.button?.image = image
     }
 
-    private func flash(_ symbol: String) {
-        setSymbol(symbol)
+    private func flash(_ color: NSColor) {
+        setGlyph(color)
         flashResetItem?.cancel()
         let reset = DispatchWorkItem { [weak self] in
             MainActor.assumeIsolated { self?.applyStateIcon() }
