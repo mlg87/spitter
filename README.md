@@ -35,6 +35,11 @@ on the clipboard instead of pasted.
 Anything still missing shows up as a warning item in the menu; clicking it opens the right
 System Settings pane.
 
+**After updating Spitter**, macOS may stop honouring the Accessibility grant: it ties the grant to
+the app's signature, and every release is signed afresh. The symptom is a Spitter that is still
+ticked in the Accessibility list while the hotkey does nothing. Remove it from that list and add it
+back.
+
 ### If you keep the default Fn hotkey
 
 macOS maps Fn to its own dictation/emoji picker. Set **System Settings → Keyboard → "Press 🌐 key
@@ -102,9 +107,23 @@ Layout:
 - `Sources/SpitterTests` — an executable test runner. Neither XCTest nor Swift Testing is importable
   with Command Line Tools only, so tests are plain assertions that run identically here and on CI.
 
-TCC keys its grants to the app's code signature, so **rebuilding invalidates them**. After a rebuild
-run `tccutil reset All com.mlg87.spitter` and re-approve. Permissions also require the bundled app —
-`swift run` has no `Info.plist`, so no prompts appear.
+### Keeping permissions across rebuilds
+
+macOS stores a *code requirement* next to each grant. For an ad-hoc signature that requirement is
+the binary's cdhash, which changes on every build — so after a rebuild the Accessibility grant
+silently stops matching. System Settings still shows Spitter ticked, but the hotkey is dead and
+`log show --predicate 'subsystem == "com.apple.TCC"'` reports *"Failed to match existing code
+requirement"*. Microphone and Speech Recognition are keyed more loosely and usually survive.
+
+Fix it permanently by signing with a stable self-signed certificate. In **Keychain Access →
+Certificate Assistant → Create a Certificate…**: name it `Spitter Dev`, Identity Type **Self Signed
+Root**, Certificate Type **Code Signing**, then create it. `build.sh` picks that identity up
+automatically when it exists and falls back to ad-hoc when it does not, so CI is unaffected. The
+code requirement is then pinned to the certificate and rebuilds keep their grants.
+
+Without the certificate, recover with `tccutil reset Accessibility com.mlg87.spitter`, then add the
+app again. Permissions also require the bundled app — `swift run` has no `Info.plist`, so no
+prompts appear.
 
 ## Releases
 

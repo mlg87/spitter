@@ -14,7 +14,9 @@ enum PermissionKind: CaseIterable {
         switch self {
         case .microphone: return "Microphone access needed"
         case .speechRecognition: return "Speech Recognition access needed"
-        case .accessibility: return "Accessibility access needed"
+        // Spelled out because the common failure is not a missing grant but a stale one: macOS
+        // still shows Spitter ticked after an update, while TCC has silently stopped honouring it.
+        case .accessibility: return "Accessibility needed \u{2014} remove & re-add Spitter"
         }
     }
 

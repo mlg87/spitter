@@ -24,6 +24,21 @@ MACOS="${CONTENTS}/MacOS"
 RESOURCES="${CONTENTS}/Resources"
 ARCHS="${ARCHS:-arm64 x86_64}"
 
+# Signing identity. Ad-hoc ("-") is the release default: there is no Apple Developer Program
+# membership, and ad-hoc still satisfies Apple Silicon's signed-code requirement.
+#
+# The catch is TCC. macOS records a code requirement alongside each Accessibility grant, and for an
+# ad-hoc signature that requirement is the binary's cdhash — which changes on every single build.
+# The grant then silently stops matching ("Failed to match existing code requirement" in tccd's
+# log) while still appearing ticked in System Settings, and the hotkey dies until the entry is
+# removed and re-added. Signing with a stable self-signed certificate pins the requirement to the
+# certificate instead, so rebuilds keep the grant. Create one named "Spitter Dev" (see the README)
+# and this picks it up automatically; CI has no such certificate and falls back to ad-hoc.
+DEV_IDENTITY="Spitter Dev"
+if [[ -z "${CODESIGN_IDENTITY:-}" ]] && security find-identity -v -p codesigning 2>/dev/null | grep -qF "$DEV_IDENTITY"; then
+    CODESIGN_IDENTITY="$DEV_IDENTITY"
+    echo "--> Using stable local signing identity: ${DEV_IDENTITY}"
+fi
 CODESIGN_IDENTITY="${CODESIGN_IDENTITY:--}"
 
 echo "==> Building Spitter v${VERSION}"
