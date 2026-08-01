@@ -1,3 +1,3 @@
 import SpitterCore
 
-print(Spitter.name)
+print(HotkeyBinding.default.displayName)
