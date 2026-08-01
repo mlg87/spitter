@@ -23,7 +23,17 @@ enum MenubarGlyph {
         let image = NSImage(size: NSSize(width: w, height: h))
         image.lockFocus()
 
-        let ink = color ?? .black
+        // The tail is a filled path that overlaps the stroked bubble outline. Drawn directly with a
+        // translucent colour, that overlap composites twice and shows up as a darker, more
+        // saturated wedge. Painting the whole mark opaquely inside a transparency layer and fading
+        // the layer once keeps the opacity uniform.
+        let alpha = color?.alphaComponent ?? 1
+        let ink = (color ?? .black).withAlphaComponent(1)
+        let context = NSGraphicsContext.current?.cgContext
+        if alpha < 1 {
+            context?.setAlpha(alpha)
+            context?.beginTransparencyLayer(auxiliaryInfo: nil)
+        }
         ink.set()
 
         let line = max(1.4, h * 0.085)
@@ -50,6 +60,9 @@ enum MenubarGlyph {
             NSBezierPath(roundedRect: bar, xRadius: barWidth / 2, yRadius: barWidth / 2).fill()
         }
 
+        if alpha < 1 {
+            context?.endTransparencyLayer()
+        }
         image.unlockFocus()
         image.isTemplate = color == nil
         return image
@@ -69,9 +82,10 @@ enum GlyphColor {
     /// A dictation that failed — a 1.5s flash, so it gets its own hue rather than sharing the
     /// persistent permission-warning red.
     static let failed = NSColor(calibratedRed: 1.00, green: 0.55, blue: 0.05, alpha: 1)
-    /// Missing permissions: persistent, and dimmed so a standing warning never reads as the
-    /// momentary flash of a failed take.
-    static let warning = NSColor(calibratedRed: 0.88, green: 0.15, blue: 0.12, alpha: 0.55)
+    /// Missing permissions: persistent, so it is a muted brick red rather than the vivid alert
+    /// colours the transient flashes use. Deliberately opaque — a translucent mark reads as a
+    /// rendering glitch in the menu bar, not as "dimmed".
+    static let warning = NSColor(calibratedRed: 0.65, green: 0.22, blue: 0.20, alpha: 1)
     /// Empty transcript: nothing went wrong, nothing was delivered — a neutral grey blip.
     static let empty = NSColor(calibratedRed: 0.56, green: 0.56, blue: 0.58, alpha: 1)
 }
