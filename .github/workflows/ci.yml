@@ -34,6 +34,11 @@ jobs:
   commitlint:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # The action lists the PR's commits through the API, which the workflow-level
+    # `contents: read` default does not cover.
+    permissions:
+      contents: read
+      pull-requests: read
     steps:
       - uses: actions/checkout@v4
         with:
