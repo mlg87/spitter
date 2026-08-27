@@ -4,14 +4,16 @@
 #   1. PRs merge to main with conventional-commit messages (feat:/fix:/...). No manual bumps.
 #   2. release-please maintains a rolling release PR that accumulates them, bumping version.txt
 #      and CHANGELOG.md.
-#   3. Merging that release PR creates tag v<version> plus a DRAFT release; build-tarball then
-#      builds the ad-hoc-signed universal app, uploads Spitter-<version>.tar.gz, and publishes.
+#   3. Merging that release PR creates a DRAFT release (no tag yet — GitHub creates tag v<version>
+#      only at publish). build-tarball checks out the release's target sha, builds the ad-hoc-signed
+#      universal app, uploads Spitter-<version>.tar.gz, then publishes — which creates tag v<version>.
 # NEVER create v* tags or releases by hand — CI owns them.
 name: release
 
 on:
   push:
     branches: [main]
+  workflow_dispatch:   # manual retry lever: re-run release-please without a dummy commit
 
 permissions:
   contents: write        # tags + releases
@@ -42,6 +44,8 @@ jobs:
       release_created: ${{ steps.rp.outputs.release_created }}
       tag_name: ${{ steps.rp.outputs.tag_name }}
       version: ${{ steps.rp.outputs.version }}
+      # build-tarball checks out this sha, not tag_name: the tag does not exist while draft.
+      sha: ${{ steps.rp.outputs.sha }}
     steps:
       - uses: googleapis/release-please-action@v4
         id: rp
@@ -54,7 +58,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ needs.release-please.outputs.tag_name }}
+          ref: ${{ needs.release-please.outputs.sha }}
 
       - name: Build universal app bundle
         run: ./build.sh
